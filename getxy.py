@@ -22,6 +22,9 @@ import os
 import matplotlib.pyplot as plt
 from ultralytics import YOLO # optional : SAM(Spatial Attention Module)
 from scipy.stats import multivariate_normal
+from diffractio import um, mm, degrees, np, plt
+from diffractio.scalar_sources_XY import Scalar_source_XY
+from diffractio.scalar_masks_XY import Scalar_mask_XY
 
 # Path to the frame_image folder
 frame_image_folder = 'C:/study/Project_SLM/getxy/frame_image/' # empty the folder before running the code
@@ -35,7 +38,18 @@ for file_name in file_list:
             os.unlink(file_path)
     except Exception as e:
         print(f"Error deleting {file_path}: {e}")
-        
+
+# Set the parameters for the SLM phase mask
+z = 250*mm
+wavelength = 0.5 * um
+xin = np.linspace(-1*mm, 1*mm, 640)
+yin = np.linspace(-1*mm, 1*mm, 480)
+
+xout = np.linspace(-10*mm, 10*mm, 1024)
+yout = np.linspace(-10*mm, 10*mm, 1024)
+
+
+# Set Yolov8 position detection constant        
 CONFIDENCE_THRESHOLD = 0.6
 
 coco128 = open('C:/study/Project_SLM/getxy/coco128.txt', 'r')
