@@ -25,6 +25,7 @@ from scipy.stats import multivariate_normal
 from diffractio import um, mm, degrees, np, plt
 from diffractio.scalar_sources_XY import Scalar_source_XY
 from diffractio.scalar_masks_XY import Scalar_mask_XY
+from slmsuite.holography.algorithms import Hologram
 
 # Path to the frame_image folder
 frame_image_folder = 'C:/study/Project_SLM/getxy/frame_image/' # empty the folder before running the code
