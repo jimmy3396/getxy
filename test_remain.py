@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+import matplotlib.pyplot as plt
 from slmsuite.holography.algorithms import Hologram
 from slmsuite.hardware.slms.slm import SLM
 from slmsuite.hardware.cameras.camera import Camera
@@ -60,3 +61,7 @@ zoom = holo.plot_farfield(holo.target)
 holo.optimize(method="WGS-Kim", maxiter=10) # WGS-Kim : Weighted Gerchberg-Saxton algorithm, maxiter can be changed to 20 (FPS will be slower) computational power is important
 holo.plot_farfield(limits=zoom,title='WGS Image Reconstruction')
 holo.plot_farfield(holo.target - holo.amp_ff, limits=zoom,title='WGS Image Error')
+
+phase_img=holo.extract_phase()
+plt.imshow(phase_img,aspect="auto")
+plt.show()
