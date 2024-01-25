@@ -22,16 +22,19 @@ import os
 import matplotlib.pyplot as plt
 from ultralytics import YOLO # optional : SAM(Spatial Attention Module)
 from scipy.stats import multivariate_normal
-from diffractio import um, mm, degrees, np, plt
-from diffractio.scalar_sources_XY import Scalar_source_XY
-from diffractio.scalar_masks_XY import Scalar_mask_XY
+from slmsuite.holography.algorithms import Hologram
+from slmsuite.hardware.slms.slm import SLM
+from slmsuite.hardware.cameras.camera import Camera
+from slmsuite.hardware.cameraslms import FourierSLM
+from slmsuite.holography import toolbox
 
 # Path to the frame_image folder
 frame_image_folder = 'C:/study/Project_SLM/getxy/frame_image/' # empty the folder before running the code
-
+phase_image_folder = 'C:/study/Project_SLM/getxy/phase_image/' # empty the folder before running the code
 # Remove all files in the folder
-file_list = os.listdir(frame_image_folder)
-for file_name in file_list:
+file_list_1 = os.listdir(frame_image_folder)
+file_list_2 = os.listdir(phase_image_folder)
+for file_name in file_list_1:
     file_path = os.path.join(frame_image_folder, file_name)
     try:
         if os.path.isfile(file_path):
@@ -39,15 +42,13 @@ for file_name in file_list:
     except Exception as e:
         print(f"Error deleting {file_path}: {e}")
 
-# Set the parameters for the SLM phase mask
-z = 250*mm
-wavelength = 0.5 * um
-xin = np.linspace(-1*mm, 1*mm, 640)
-yin = np.linspace(-1*mm, 1*mm, 480)
-
-xout = np.linspace(-10*mm, 10*mm, 1024)
-yout = np.linspace(-10*mm, 10*mm, 1024)
-
+for file_name in file_list_2:
+    file_path = os.path.join(frame_image_folder, file_name)
+    try:
+        if os.path.isfile(file_path):
+            os.unlink(file_path)
+    except Exception as e:
+        print(f"Error deleting {file_path}: {e}")
 
 # Set Yolov8 position detection constant        
 CONFIDENCE_THRESHOLD = 0.6
@@ -140,6 +141,20 @@ while True:
     img_file_path = f'C:/study/Project_SLM/getxy/frame_image/generated_image_frame_{frame_counter}.png'
     cv2.imwrite(img_file_path, img)
 
+
+    
+    img_near = cv2.imread(img_file_path, cv2.IMREAD_GRAYSCALE)
+    img_near = cv2.bitwise_not(img_near) # Invert
+    assert img_near is not None, "Could not find this test image!"
+    
+    # Resize (zero pad) for GS.
+    shape = (512,640) # (height, width) should be (1200, 1920) for 4K
+    target = toolbox.pad(img, shape)
+    holo = Hologram(target)
+    holo.optimize(method="WGS-Kim", maxiter=10) # WGS-Kim : Weighted Gerchberg-Saxton algorithm, maxiter can be changed to 20 (FPS will be slower) computational power is important
+    phase_img=holo.extract_phase()
+    phase_img_path = f'C:/study/Project_SLM/getxy/phase_image/generated_phase_image_{frame_counter}.png'
+    plt.imsave(phase_img_path, phase_img, cmap='gray')
     frame_counter += 1  # Increment frame counter for the next frame
     
     end = datetime.datetime.now()
